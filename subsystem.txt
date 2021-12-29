@@ -1,0 +1,30 @@
+Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux
+
+dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
+
+dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
+
+Download Linux Kernel: https://aka.ms/wsl2kernel
+
+
+wsl --set-default-version 2
+
+
+CHECK VERSION 
+⚙️ wsl --list --verbose
+
+2. INSTALL GUI
+
+⚙️ sudo apt update && sudo apt upgrade -y
+
+⚙️ sudo apt install kali-desktop-xfce -y
+
+XRDP
+
+⚙️ sudo apt install xrdp -y
+
+⚙️ sudo service xrdp start
+
+
+
+sudo docker run -i -t --network="host" --privileged kalilinux/kali-rolling bash

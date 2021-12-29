@@ -1,0 +1,166 @@
+sudo systemctl start docker-wireguard-pihole.service
+sudo systemctl stop docker-wireguard-pihole.service
+
+
+
+
+Procedimiento para instalar Wireguard y Pi-hole utilizando Docker en Ubuntu 20.04:
+El primer paso es actualizar la biblioteca de software disponible y descargar docker y docker-compose.
+
+sudo apt update && sudo apt install docker.io docker-compose -y
+Asumo que tenes instaladas las utilidades básicas para linux que documenté acá (voy actualizando este post en el tiempo).
+
+A continuación iniciamos el servicio de docker y configuramos para que inicie el mismo con el sistema.
+
+sudo systemctl daemon-reload
+sudo systemctl enable docker.service
+sudo systemctl start docker.service
+sudo systemctl status docker.service
+Captura de pantalla de verificación del servicio de Docker corriendo.
+Captura de pantalla de verificación del servicio de Docker corriendo.
+Ahora creo un directorio /opt/docker/wireguard-pihole, donde copie el docker-compose.yaml que adecué del que había creado el PeladoNerd, para trabajar en la estructura de directorios que me gusta a mí.
+
+sudo mkdir -p /opt/docker/wireguard-pihole
+cd /opt/docker/wireguard-pihole
+sudo wget https://raw.githubusercontent.com/fsismo/docker-compose/main/wireguard-pihole/docker-compose.yml
+El contenido del archivo es el siguiente:
+
+ #Fork from the PeladoNerd's yml file https://github.com/pablokbs/peladonerd/tree/master/varios/12
+version: '3.7'
+
+networks:
+  containers:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+
+services:
+  wireguard:
+    image: linuxserver/wireguard
+    container_name: wireguard
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Argentina/Buenos_Aires
+      - SERVERURL=www.sismonda.com.ar #optional | Ip or domain of your server
+      - SERVERPORT=51820 #optional
+      - PEERS=10 #optional
+      - PEERDNS=auto #optional
+      - INTERNAL_SUBNET=10.13.13.0 #optional
+    volumes:
+      - /opt/docker/wireguard-pihole/wireguard/config:/config
+      - /lib/modules:/lib/modules
+      - /usr/src:/usr/src
+    ports:
+      - 51820:51820/udp
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+    dns:
+      - 172.20.0.7
+    restart: unless-stopped
+    networks:
+      containers:
+        ipv4_address: 172.20.0.6
+
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:v5.7
+    dns:
+      - "127.0.0.1"
+      - "1.1.1.1"
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "67:67/udp"
+      - "80:80/tcp"
+      - "443:443/tcp"
+    environment:
+      TZ: 'America/Argentina/Buenos_Aires'
+      WEBPASSWORD: 'S3cr3t0'
+    volumes:
+      - '/opt/docker/wireguard-pihole/pihole/etc/pihole/:/etc/pihole/'
+      - '/opt/docker/wireguard-pihole/pihole/etc/dnsmasq.d/:/etc/dnsmasq.d/'
+    # Recommended but not required (DHCP needs NET_ADMIN)
+    #cap_add:
+    #  - NET_ADMIN
+    restart: unless-stopped
+    networks:
+      containers:
+        ipv4_address: 172.20.0.7
+
+networks:
+  containers:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+
+Por defecto Ubuntu tiene el resolvd tomando el puerto 53. Para que pihole pueda se utilizado en la lan debemos liberar el puerto. Pero primero nos vamos a asegurar que el equipo se resuelva a sí mismo.
+
+sudo sed -i "s/127.0.0.1 localhost/127.0.0.1 localhost $(hostname)/g" /etc/hosts
+sudo systemctl disable systemd-resolved
+sudo systemctl stop systemd-resolved
+Esta acción va a afectar la resolución de nombres de nuestro servidor. Esto lo resolvemos agregando los dns de google en el /etc/resolv.conf.
+
+sudo sed -i '/nameserver 127.0.0.53/a nameserver 8.8.8.8' /etc/resolv.conf
+sudo sed -i '/nameserver 127.0.0.53/a nameserver 8.8.4.4' /etc/resolv.conf
+
+Captura de pantalla con el /etc/resolv.conf configurado para utilizar los dns de Google (8.8.8.8 y 8.8.4.4).
+Para iniciar los servicios «dockerizados» tenemos que ejecutar el comando:
+
+cd /opt/docker/wireguard-pihole
+sudo docker-compose up -d
+Se debe ejecutar los siguientes comandos parar o bajar los servicios:
+
+cd /opt/docker/wireguard-pihole
+sudo docker-compose down
+De ser necesario revisar los logs de los contenedores, se debe ejecutar el comando según corresponda.
+
+sudo docker container logs pihole
+sudo docker container logs wireguard
+Los archivos de configuración de los clientes de la vpn se encuentran el el directorio /opt/docker/wireguard-pihole/wireguard/config y en cada directorio del tipo «peerX» hay un .conf y un .png para configurar la conexión del cliente.
+
+Iniciar Wireguard y Pi-hole al inicio del equipo:
+Cuando terminamos de configurar y probar todo, lo lógico es asegurarnos que los servicios estén disponibles cuando se prende el equipo.
+
+Para hacer esto vamos a configurar esta receta de Docker Compose como servicio creando el archivo:
+
+sudo vi /etc/systemd/system/docker-wireguard-pihole.service
+Con este contenido.
+
+[Unit]
+Description=Docker Compose Wireguard / Pi-Hole Service
+Requires=docker.service
+After=docker.service
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/docker/wireguard-pihole/
+ExecStart=/usr/bin/docker-compose up -d
+ExecStop=/usr/bin/docker-compose down
+TimeoutStartSec=0
+[Install]
+WantedBy=multi-user.target
+Ahora le tenemos que dar permisos de ejecución.
+
+sudo chmod 640 /etc/systemd/system/docker-wireguard-pihole.service
+Como punto final vamos a recargar la configuración de systemd para que incorpore el archivo, configurar el servicio para que se inicie con el sistema.
+
+sudo systemctl daemon-reload
+sudo systemctl enable docker-wireguard-pihole.service
+Ahora podemos iniciar o parar este set de dockers ejecutando los comando:
+
+sudo systemctl start docker-wireguard-pihole.service
+sudo systemctl stop docker-wireguard-pihole.service
+Networking y Seguridad:
+Wireguard:
+Wireguard estucha el servicio en el puerto 51820 protoclo UDP. Si tu equipo está destras de un firewall tener que abrir ese puerto y este protocolo redireccionarlo a la ip de tu servidor docker.
+
+Pi-Hole:
+No es necesario abrir puertos en el firewall para los servicios del Pi-Hole ya que los mismos son utilizandos desde la LAN o la VPN.
+
+Se consume el servicio en el puerto 53 con los protocolos TCP / UDP, en mi caso también lo uso como DNS de la LAN.
+
+Pi-Hole tiene la interfase de administración escuchando en el puerto 80 y 443 protocolo TCP. Los certificados del https son autofirmados, va a solicitar la contraseña que está definida en el archivo «docker-compose.yaml» línea 55.
