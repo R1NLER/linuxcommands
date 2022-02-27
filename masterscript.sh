@@ -6,9 +6,10 @@ tar xf noip-duc-linux.tar.gz
 cd noip-2.1.9-1/
 make install
 /usr/local/bin/noip2
-wget https://raw.githubusercontent.com/R1NLER/linuxcommands/main/noip2 /etc/init.d/
-chmod a+x /etc/init.d/noip2
-update-rc.d noip2 defaults
+sudo wget https://raw.githubusercontent.com/R1NLER/linuxcommands/main/noip2 
+mv noip2 /etc/init.d/
+sudo chmod a+x /etc/init.d/noip2
+sudo update-rc.d noip2 defaults
 cd
 wget https://www.sudo.ws/dist/sudo-1.9.9.tar.gz
 tar xzvf sudo-1.9.9.tar.gz
