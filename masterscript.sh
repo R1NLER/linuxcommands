@@ -11,7 +11,7 @@ sudo mv noip2 /etc/init.d/
 sudo chmod a+x /etc/init.d/noip2
 sudo update-rc.d noip2 defaults
 sudo rm -r /usr/local/src/noip-duc-linux.tar.gz
-cd /home/pi/                        #update sudo
+cd /home/pi/                             #update sudo
 wget https://www.sudo.ws/dist/sudo-1.9.9.tar.gz
 tar xzvf sudo-1.9.9.tar.gz
 cd sudo-1.9.9
@@ -24,4 +24,5 @@ sudo systemctl enable docker.service
 sudo systemctl start docker.service
 sudo systemctl status docker.service
 #install openmediavault
+cd /root/
 wget -O - https://raw.githubusercontent.com/OpenMediaVault-Plugin-Developers/installScript/master/install | sudo bash
