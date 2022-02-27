@@ -1,7 +1,7 @@
 #! /bin/bash
-sudo apt update && apt upgrade -y
-sudo apt install screen -y
-sudo cd /usr/local/src/
+sudo apt update && apt upgrade -y #update repositories
+sudo apt install screen -y #install screen
+sudo cd /usr/local/src/ #install noip2
 sudo wget http://www.noip.com/client/linux/noip-duc-linux.tar.gz
 sudo tar xf noip-duc-linux.tar.gz
 sudo cd noip-2.1.9-1/
@@ -11,14 +11,15 @@ sudo wget https://raw.githubusercontent.com/R1NLER/linuxcommands/main/noip2
 sudo mv noip2 /etc/init.d/
 sudo chmod a+x /etc/init.d/noip2
 sudo update-rc.d noip2 defaults
-cd
+sudo rm -r /usr/local/src/noip-duc-linux.tar.gz
+cd #update sudo
 sudo wget https://www.sudo.ws/dist/sudo-1.9.9.tar.gz
 sudo tar xzvf sudo-1.9.9.tar.gz
 sudo cd sudo-1.9.9
 sudo ./configure				#sudo apt-get install build-essential (si da error)
 sudo make && sudo make install
 bash -c "sudo --version"
-sudo apt update && sudo apt install docker.io docker-compose -y
+sudo apt update && sudo apt install docker.io docker-compose -y #installing docker & docker-compose
 sudo systemctl daemon-reload
 sudo systemctl enable docker.service
 sudo systemctl start docker.service
