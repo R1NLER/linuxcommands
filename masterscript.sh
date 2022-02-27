@@ -1,3 +1,4 @@
+#This script installs openmediavault with noip2, updates sudo to last version and docker.
 #! /bin/bash
 apt update && apt upgrade -y       #update repositories
 apt install build-essential -y
