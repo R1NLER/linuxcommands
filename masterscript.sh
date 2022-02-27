@@ -1,6 +1,7 @@
 #! /bin/bash
 apt update && apt upgrade -y       #update repositories
-apt install build-essential
+apt install build-essential -y
+apt install wget -y
 cd /usr/local/src/                 #install noip2
 wget http://www.noip.com/client/linux/noip-duc-linux.tar.gz
 tar xf noip-duc-linux.tar.gz
