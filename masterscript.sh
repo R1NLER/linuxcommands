@@ -16,7 +16,7 @@ cd /home/pi/                             #update sudo
 wget https://www.sudo.ws/dist/sudo-1.9.9.tar.gz
 tar xzvf sudo-1.9.9.tar.gz
 cd sudo-1.9.9
-./configure				                 #sudo apt-get install build-essential (si da error)
+./configure				                 
 sudo make && sudo make install
 bash -c "sudo --version"
 sudo apt update && sudo apt install docker.io docker-compose -y #installing docker & docker-compose
