@@ -1,0 +1,63 @@
+apt update
+apt install xfce4 xfce4-goodies gnome-icon-theme tightvncserver
+adduser #user
+gpasswd -a #user sudo
+su - user
+# vncserver
+vncserver -kill :1
+ mv ~/.vnc/xstartup ~/.vnc/xstartup.bak
+ nano ~/.vnc/xstartup
+ #Content of file
+          #!/bin/bash
+
+          xrdb $HOME/.Xresources
+
+          startxfce4 &
+          
+chmod +x ~/.vnc/xstartup
+#create service
+nano /etc/init.d/vncserver
+#!/bin/bash
+
+PATH=”$PATH:/usr/bin/”
+
+export USER=”user”
+
+DISPLAY=”1″
+
+DEPTH=”16″
+
+GEOMETRY=”1920x1080″
+
+OPTIONS=”-depth ${DEPTH} -geometry ${GEOMETRY} :${DISPLAY} -localhost”
+
+. /lib/lsb/init-functions
+case “$1” in
+
+start)
+
+log_action_begin_msg “Starting vncserver for user ‘${USER}’ on localhost:${DISPLAY}”
+
+su ${USER} -c “/usr/bin/vncserver ${OPTIONS}”
+
+;;
+stop)
+
+log_action_begin_msg “Stopping vncserver for user ‘${USER}’ on localhost:${DISPLAY}”
+
+su ${USER} -c “/usr/bin/vncserver -kill :${DISPLAY}”
+
+;;
+restart)
+
+$0 stop
+
+$0 start
+
+;;
+
+esac
+
+exit 0
+chmod +x /etc/init.d/vncserver
+service vncserver start
