@@ -61,3 +61,4 @@ esac
 exit 0
 chmod +x /etc/init.d/vncserver
 service vncserver start
+sudo apt-get install dbus-x11 #if desktop fails
