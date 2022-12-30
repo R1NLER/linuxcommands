@@ -27,6 +27,3 @@ services:
     dns:
       - 172.20.0.7
     restart: unless-stopped
-    networks:
-      containers:
-        ipv4_address: 172.20.0.6
