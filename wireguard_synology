@@ -1,0 +1,13 @@
+sudo docker run -d \
+--name=wg-easy \
+-e WG_HOST=your.dns.here \
+-e PASSWORD=YoursecurePassword@ \
+-v /volume1/docker/wg-easy:/etc/wireguard \ #path to the folder on your NAS
+-p 51820:51820/udp \
+-p 51821:51821/tcp \
+--cap-add=NET_ADMIN \
+--cap-add=SYS_MODULE \
+--sysctl="net.ipv4.conf.all.src_valid_mark=1" \
+--sysctl="net.ipv4.ip_forward=1" \
+--restart unless-stopped \
+weejewel/wg-easy
