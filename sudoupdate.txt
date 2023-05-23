@@ -1,7 +1,0 @@
-wget https://www.sudo.ws/dist/sudo-1.9.9.tar.gz
-tar xzvf sudo-1.9.9.tar.gz
-cd sudo-1.9.9
-./configure				#sudo apt-get install build-essential (si da error)
-sudo make && sudo make install
-bash -c "sudo --version"
-reboot
