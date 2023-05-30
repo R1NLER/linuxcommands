@@ -1,0 +1,36 @@
+## Wordpress
+
+# Instalar dependencias 
+
+sudo apt install php-fpm php-common php-mbstring php-xmlrpc php-soap php-gd php-xml php-intl php-mysql php-cli php-ldap php-zip php-curl
+sudo apt install openssl
+sudo nano /etc/php/{versión-php}/cli/php.ini
+extension=openssl
+sudo service php{versión-php}-fpm restart
+
+# Crear DB
+
+mysql -u root -p
+
+CREATE DATABASE wordpress;
+CREATE USER 'wordpressuser'@'localhost' IDENTIFIED BY 'new_password_here';
+GRANT ALL PRIVILEGES ON wordpress.* TO 'user'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+
+# Bajar e instalar wordpress
+
+wget https://wordpress.org/latest.tar.gz
+tar -zxvf latest.tar.gz
+sudo mv wordpress/* /var/www/html
+sudo find /var/www/html -type d -exec chmod 0755 {} \;
+sudo find /var/www/html -type f -exec chmod 0644 {} \;
+
+
+# Configurar wordpress
+
+cd /var/www/html
+sudo mv wp-config-sample.php wp-config.php
+sudo nano wp-config.php
+
+(Configurar DB_NAME, DB_USER, DB_PASSWORD, DB_HOST)
