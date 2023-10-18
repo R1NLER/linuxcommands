@@ -1,0 +1,83 @@
+#!/bin/bash
+
+if [ "$(whoami)" == "root" ]; then
+    exit 1
+fi
+
+ruta=$(pwd)
+
+# Actualizando el sistema
+sudo pacman -Syu
+
+# Instalando dependencias y programas
+sudo pacman -S base-devel git vim xcb-util xcb-util-wm xcb-util-keysyms xcb-util-cursor feh scrot zsh rofi xclip bat findutils neofetch imagemagick ranger kitty
+
+# Para programas que no están en los repositorios oficiales de Arch, se recomienda usar `yay`
+yay -S scrub bspwm sxhkd
+
+# Creando carpeta de Reposistorios
+mkdir ~/github
+
+# Descargar Repositorios Necesarios
+cd ~/github
+git clone --recursive https://github.com/polybar/polybar
+git clone https://github.com/ibhagwan/picom.git
+
+# Instalando Polybar
+cd ~/github/polybar
+mkdir build
+cd build
+cmake ..
+make -j$(nproc)
+sudo make install
+
+# Instalando Picom
+cd ~/github/picom
+git submodule update --init --recursive
+meson --buildtype=release . build
+ninja -C build
+sudo ninja -C build install
+
+# Instalando p10k
+git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.powerlevel10k
+echo 'source ~/.powerlevel10k/powerlevel10k.zsh-theme' >>~/.zshrc
+
+# Instalando p10k root
+sudo git clone --depth=1 https://github.com/romkatv/powerlevel10k.git /root/.powerlevel10k
+
+# Configuramos el tema Nord de Rofi
+mkdir -p ~/.config/rofi/themes
+cp $ruta/rofi/nord.rasi ~/.config/rofi/themes/
+
+# Suponiendo que tienes un paquete `lsd.deb` y deseas instalarlo, deberías convertirlo a un formato .tar.xz o buscar `lsd` en AUR.
+#yay -S lsd
+
+# Instalar HackNerdFonts
+sudo cp -v $ruta/fonts/HNF/* /usr/share/fonts/TTF/
+
+# Instalando Fuentes de Polybar
+sudo cp -v $ruta/Config/polybar/fonts/* /usr/share/fonts/TTF/
+
+# Copia de configuracion y otros archivos
+# ... [sin cambios aquí]
+
+# Plugins ZSH
+sudo pacman -S zsh-syntax-highlighting zsh-autosuggestions
+# Para `zsh-autocomplete` y el plugin de `sudo` puedes instalarlos manualmente o buscar en AUR
+
+# Cambiando de SHELL a zsh
+chsh -s $(which zsh)
+sudo chsh -s $(which zsh) root
+
+# Asignando permisos
+# ... [sin cambios aquí]
+
+# Configurando tema de Rofi
+rofi-theme-selector
+
+# Limpiando
+rm -rf ~/github
+rm -rf $ruta
+
+# Mensaje de finalización
+notify-send "BSPWM INSTALADO"
